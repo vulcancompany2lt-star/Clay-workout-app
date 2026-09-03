@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clay's Workouts">
+<link rel="manifest" href="manifest.json">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Clay's Workout App V2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{position:sticky;top:0;z-index:10;background:#111827;color:white;padding:15px 16px}.title{font-size:21px;font-weight:800}.sub{font-size:12px;color:#d1d5db;margin-top:3px}
+nav{display:flex;gap:7px;overflow-x:auto;margin-top:12px}nav button{border:0;border-radius:10px;padding:10px 13px;background:#374151;color:#fff;font-weight:700;white-space:nowrap}nav button.active{background:#fff;color:#111827}
+main{max-width:700px;margin:auto;padding:16px 14px 100px}.hero{background:#fff;border-radius:18px;padding:17px;margin-bottom:14px;border:1px solid #e5e7eb}.hero h2{margin:0 0 5px;font-size:25px}.hero p{margin:0;color:#6b7280}
+.card{background:white;border:1px solid #e5e7eb;border-radius:17px;padding:16px;margin:12px 0}.card h3{margin:0 0 5px;font-size:19px}.raw{color:#4b5563;line-height:1.45;font-size:14px}
+.exercise{border:1px solid #e5e7eb;border-radius:16px;padding:15px;margin:12px 0;background:#fff}.exercise .label{font-size:11px;font-weight:800;color:#6b7280}.exercise h3{margin:3px 0 5px;font-size:20px}.meta{color:#6b7280;font-size:14px;margin-bottom:12px}
+.set{display:grid;grid-template-columns:34px 1fr 1fr 42px;gap:7px;align-items:center;margin:7px 0}.set input{min-width:0;padding:10px;border:1px solid #d1d5db;border-radius:9px;font-size:16px}.setno{font-weight:800;color:#6b7280;text-align:center}.check{height:40px;border-radius:9px;border:1px solid #d1d5db;background:#fff;font-size:18px}.check.done{background:#dcfce7;border-color:#86efac;color:#15803d}
+.btn{width:100%;border:0;border-radius:11px;padding:12px;font-weight:800;background:#111827;color:white;margin-top:9px}.secondary{background:#e5e7eb;color:#111827}
+.progress{height:9px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin-top:12px}.bar{height:100%;background:#22c55e;width:0}
+.actions{display:flex;gap:8px;margin-top:13px}.actions button{flex:1;border:0;border-radius:11px;padding:12px;font-weight:800}
+table{border-collapse:collapse;width:100%;background:#fff;font-size:13px}td,th{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}th{background:#f9fafb}.tablewrap{overflow:auto;border:1px solid #e5e7eb;border-radius:14px;margin-top:10px}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:9px 12px calc(9px + env(safe-area-inset-bottom));z-index:20}.bottomin{max-width:700px;margin:auto;display:flex;gap:7px}.bottom button{flex:1;border:0;border-radius:10px;padding:11px;font-weight:800;background:#e5e7eb}.bottom .primary{background:#111827;color:#fff}
+.timer{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:30;align-items:center;justify-content:center;padding:20px}.timer.show{display:flex}.timerbox{background:#fff;border-radius:22px;padding:25px;text-align:center;width:min(400px,100%)}.timerbox h2{margin:0}.clock{font-size:70px;font-weight:900;margin:10px}.timerbox button{border:0;border-radius:10px;padding:11px 15px;margin:4px;font-weight:800}
+.empty{text-align:center;padding:35px 10px;color:#6b7280}
+</style>
+</head>
+<body>
+<header><div class="title">💪 Clay's Workout App</div><div class="sub">Version 2 • Phone-friendly tracker</div><nav id="nav"></nav></header>
+<main id="main"></main>
+
+<div class="bottom"><div class="bottomin"><button onclick="previous()">← Back</button><button class="primary" onclick="next()">Next →</button><button onclick="resetTab()">Reset</button></div></div>
+
+<div class="timer" id="timer"><div class="timerbox"><h2>Rest Timer</h2><div class="clock" id="clock">1:30</div><button onclick="startTimer()">Start</button><button onclick="adjust(-15)">−15</button><button onclick="adjust(15)">+15</button><button onclick="closeTimer()">Close</button></div></div>
+
+<script>
+const PLAN={"12-Week Pogram Overview": [["12-Week Full-Body Program", "", "", "", "", ""], ["Profile", "45 years, male, 6'0\", 210 lb, intermediate", "", "", "", ""], ["Primary goal", "50/50 muscle gain + fat loss (recomposition)", "", "", "", ""], ["Starting calorie target", "2,450 kcal/day average", "", "", "", ""], ["Protein target", "190 g/day", "", "", "", ""], ["Fat target", "75 g/day", "", "", "", ""], ["Carbohydrate target", "250 g/day (approximately)", "", "", "", ""], ["Rate of loss target", "About 0.5–1.0 lb/week; prioritize strength retention/gain", "", "", "", ""], ["Lifting", "3 days/week, full body, ~50–60 min", "", "", "", ""], ["Cardio", "2 days/week; mostly Zone 2, 25–35 min", "", "", "", ""], ["Progression Rules", "", "", "", "", ""], ["•", "Weeks 1–3: build volume and reps", "", "", "", ""], ["•", "Week 4: deload — reduce sets by ~35–40%", "", "", "", ""], ["•", "Weeks 5–7: increase loads and work toward the top of each rep range.", "", "", "", ""], ["•", "Week 8: deload — same approach as Week 4.", "", "", "", ""], ["•", "Weeks 9–11: strongest training block; use top-end reps and add load when earned.", "", "", "", ""], ["•", "Week 12: consolidation/test week — no true maxes; aim for rep PRs with good form.", "", "", "", ""], ["•", "Double progression: when every prescribed set reaches the top of the rep range, add 2.5–5 lb for upper-body lifts or 5–10 lb for lower-body lifts next time.", "", "", "", ""], ["•", "If performance drops for 2 consecutive workouts, keep the weight the same or reduce it 5–10%.", "", "", "", ""]], "Workout Program": [["3-Day Full-Body Program", "", "", "", ""], ["Exercise", "Sets", "Reps", "Rest", "Tempo / Focus"], ["Wokout A", "", "", "", ""], ["Reverse Barbell Lunges", "3", "8–10/leg", "90 sec", "Controlled; full comfortable depth"], ["Dumbbell Bench Press", "3", "8–12", "75 sec", "Shoulder blades set"], ["Lat Pulldown / Assisted Pull-Up", "3", "8–12", "75 sec", "Pull elbows down"], ["Romanian Deadlift", "3", "8–10", "90 sec", "Hips back; neutral spine"], ["Dumbbell Lateral Raise", "2", "12–15", "45 sec", "Controlled; no swinging"], ["Plank", "2", "30–60 sec", "45 sec", "Brace abs/glutes"], ["Workout B", "", "", "", ""], ["Leg Press", "3", "10–12", "90 sec", "Controlled depth"], ["Incline Dumbbell Press", "3", "8–12", "75 sec", "Moderate incline"], ["Seated Cable Row", "3", "8–12", "75 sec", "Pause at torso"], ["Hip Thrust", "3", "8–12", "75 sec", "Squeeze glutes"], ["Dumbbell Shoulder Press", "2", "8–12", "60 sec", "No excessive arch"], ["Cable Crunch", "2", "12–15", "45 sec", "Curl ribs toward pelvis"], ["Workout C", "", "", "", ""], ["Hex Bar Squat", "3", "8–10", "75 sec", "Controlled; full comfortable depth"], ["Machine Chest Press or Push-Ups", "3", "8–12", "75 sec", "Controlled eccentric"], ["Chest-Supported Dumbbell Row", "3", "8–12", "75 sec", "Avoid shrugging"], ["Leg Curl", "3", "10–15", "60 sec", "Full comfortable range"], ["Face Pull / Reverse Fly", "2", "12–15", "45 sec", "Upper-back focus"], ["Farmer Carry", "2", "30–45 sec", "60 sec", "Tall posture; firm grip"]], "Workout Tracker": [["3-Day Full-Body Muscle & Tone Program — Tracking Sheet", "", "", "", "", "", "", "", "", ""], ["Goal: build muscle, improve definition, and keep each workout ≤60 minutes. Record weight/reps; add weight when you can complete all prescribed reps with good form.", "", "", "", "", "", "", "", "", ""], ["Workout", "Exercise", "Sets", "Target Reps", "Rest", "Set 1 Weight/Reps", "Set 2 Weight/Reps", "Set 3 Weight/Reps", "Set 4 Weight/Reps", "Notes"], ["A", "Reverse Barbell Lunges", "3", "8–10/leg", "90 sec", "", "", "", "", ""], ["A", "Dumbbell Bench Press", "3", "8–12", "75 sec", "", "", "", "", ""], ["A", "Lat Pulldown / Assisted Pull-Up", "3", "8–12", "75 sec", "", "", "", "", ""], ["A", "Romanian Deadlift", "3", "8–10", "90 sec", "", "", "", "", ""], ["A", "Dumbbell Lateral Raise", "2", "12–15", "45 sec", "", "", "", "", ""], ["A", "Plank", "2", "30–60 sec", "45 sec", "", "", "", "", ""], ["B", "Leg Press", "3", "10–12", "90 sec", "", "", "", "", ""], ["B", "Incline Dumbbell Press", "3", "8–12", "75 sec", "", "", "", "", ""], ["B", "Seated Cable Row", "3", "8–12", "75 sec", "", "", "", "", ""], ["B", "Hip Thrust", "3", "8–12", "75 sec", "", "", "", "", ""], ["B", "Dumbbell Shoulder Press", "2", "8–12", "60 sec", "", "", "", "", ""], ["B", "Cable Crunch", "2", "12–15", "45 sec", "", "", "", "", ""], ["C", "Hex Bar Squat", "3", "8–10", "75 sec", "", "", "", "", ""], ["C", "Machine Chest Press or Push-Ups", "3", "8–12", "75 sec", "", "", "", "", ""], ["C", "Chest-Supported Dumbbell Row", "3", "8–12", "75 sec", "", "", "", "", ""], ["C", "Leg Curl", "3", "10–15", "60 sec", "", "", "", "", ""], ["C", "Face Pull / Reverse Fly", "2", "12–15", "45 sec", "", "", "", "", ""], ["C", "Farmer Carry", "2", "30–45 sec", "60 sec", "", "", "", "", ""], ["Weekly Progress Log", "", "", "", "", "", "", "", "", ""], ["Week", "Body Weight", "Workout A", "Workout B", "Workout C", "Notes / Measurements", "", "", "", ""], ["1", "", "", "", "", "", "", "", "", ""], ["2", "", "", "", "", "", "", "", "", ""], ["3", "", "", "", "", "", "", "", "", ""], ["4", "", "", "", "", "", "", "", "", ""], ["5", "", "", "", "", "", "", "", "", ""], ["6", "", "", "", "", "", "", "", "", ""], ["7", "", "", "", "", "", "", "", "", ""], ["8", "", "", "", "", "", "", "", "", ""], ["9", "", "", "", "", "", "", "", "", ""], ["10", "", "", "", "", "", "", "", "", ""], ["11", "", "", "", "", "", "", "", "", ""], ["12", "", "", "", "", "", "", "", "", ""]], "Cardio & Conditioning": [["Week", "Session 1", "Session 2", "Type of Cardio Activity (Bike/treadmil etc.)", "Type of Cardio Activity (Bike/treadmil etc.)", "Daily Activity"], ["1", "25–30 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["2", "25–30 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["3", "25–30 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["4", "25 min Zone 2", "20–25 min Zone 2", "", "", "7,000–10,000 steps/day"], ["5", "30–35 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["6", "30–35 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["7", "30–35 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["8", "25 min Zone 2", "20–25 min Zone 2", "", "", "7,000–10,000 steps/day"], ["9", "30–35 min Zone 2", "30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["10", "30–35 min Zone 2", "30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["11", "30–35 min Zone 2", "30 min Zone 2", "", "", "7,000–10,000 steps/day"], ["12", "25–30 min Zone 2", "25–30 min Zone 2", "", "", "7,000–10,000 steps/day"]], "Nutrition": [["Nutrition & Recomposition Targets", ""], ["Item", "Target / Guidance"], ["Starting intake", "2,450 kcal/day"], ["Protein", "190 g/day"], ["Fat", "75 g/day"], ["Carbohydrate", "~250 g/day"], ["Water", "~2.5–3.5 L/day, more with heat/sweat"], ["Pre-workout (1–3 hr)", "30–50 g protein + 40–70 g carbs; keep fat moderate"], ["Post-workout", "30–50 g protein + 40–80 g carbs; normal meal is fine"], ["Meal pattern", "3–5 protein feedings/day, ~35–50 g protein each"], ["Adjustment rule", "Use a 7-day average body weight. If no loss for 2–3 weeks and waist is unchanged, reduce ~100–150 kcal/day. If losing >1.5 lb/week or strength/recovery falls, add ~100–150 kcal/day."]]};
+const STORAGE="clay_workout_app_v2_fixed";
+let state=JSON.parse(localStorage.getItem(STORAGE)||"null")||{tab:"HOME",current:0,values:{}};
+let seconds=90,timerId=null;
+
+function save(){localStorage.setItem(STORAGE,JSON.stringify(state))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]))}
+function sheets(){return Object.keys(PLAN)}
+function nav(){
+ let names=["HOME",...sheets()];
+ document.getElementById("nav").innerHTML=names.map(n=>`<button class="${state.tab===n?"active":""}" onclick="go('${esc(n).replace(/'/g,"\\'")}')">${esc(n)}</button>`).join("");
+}
+function go(n){state.tab=n;state.current=0;save();render()}
+function render(){nav(); state.tab==="HOME"?home():sheet(state.tab)}
+function home(){
+ let main=document.getElementById("main");
+ main.innerHTML=`<section class="hero"><h2>Ready to train?</h2><p>Your original workout plan is loaded below. Tap a workout tab to start.</p></section>`+
+ sheets().map(n=>`<section class="card"><h3>${esc(n)}</h3><div class="raw">${PLAN[n].slice(0,8).map(r=>r.filter(Boolean).join(" • ")).join("<br>")}</div><button class="btn" onclick="go('${esc(n).replace(/'/g,"\\'")}')">Open ${esc(n)}</button></section>`).join("")+
+ `<section class="card"><h3>Original Spreadsheet Data</h3><p class="raw">Nothing has been removed. Every non-empty row from the Excel file is available in each tab.</p></section>`;
+}
+function identifyRows(rows){
+ // Show every row as source data. Also create exercise cards from rows that
+ // look like actual exercises; otherwise the app remains fully usable.
+ let result=[];
+ rows.forEach((r,idx)=>{
+   let text=r.filter(Boolean).join(" ");
+   if(!text) return;
+   if(/exercise|movement|workout|sets|reps|rest|weight|notes|day|warm.?up|cool.?down/i.test(text) && idx<3) return;
+   let looks=/squat|deadlift|lunge|press|row|curl|extension|raise|fly|pull|push|plank|crunch|calf|leg|chest|back|shoulder|tricep|bicep|glute|hamstring|cardio|run|walk|bike|elliptical|stair/i.test(text);
+   if(looks) result.push({row:r,idx});
+ });
+ return result;
+}
+function parseExercise(item,i){
+ let text=item.row.filter(Boolean).join(" • ");
+ let name=item.row.find(x=>/[A-Za-z]/.test(x))||("Exercise "+(i+1));
+ let sets=((text.match(/(\d+)\s*(?:sets?|x)/i)||[])[1]||"3");
+ let reps=((text.match(/(\d+\s*[-–]\s*\d+|\d+)\s*(?:reps?|\/\s*leg)/i)||[])[1]||"8–12");
+ let rest=((text.match(/(\d+)\s*(?:sec|seconds|min|minutes)/i)||[])[1]||"90");
+ return {name,sets:Math.min(8,Math.max(1,+sets||3)),reps,rest,source:text};
+}
+function val(k){return state.values[k]||{weight:"",reps:"",done:false}}
+function key(tab,i,s){return tab+"|"+i+"|"+s}
+function sheet(tab){
+ let rows=PLAN[tab]||[], items=identifyRows(rows), ex=items.map(parseExercise);
+ let main=document.getElementById("main");
+ if(!ex.length){
+   main.innerHTML=`<section class="hero"><h2>${esc(tab)}</h2><p>The sheet did not use a standard exercise-row layout, so I kept all of its original information instead of guessing.</p></section>${table(rows)}`;
+   return;
+ }
+ let total=0,done=0;ex.forEach((e,i)=>{for(let s=0;s<e.sets;s++){total++;if(val(key(tab,i,s)).done)done++}});
+ main.innerHTML=`<section class="hero"><h2>${esc(tab)}</h2><p>${done} of ${total} sets completed</p><div class="progress"><div class="bar" style="width:${total?done/total*100:0}%"></div></div><div class="actions"><button onclick="openTimer(90)">⏱ Rest</button><button onclick="finish()">✓ Finish Workout</button></div></section>`+
+ ex.map((e,i)=>exercise(e,i,tab)).join("")+
+ `<section class="card"><h3>Original Plan</h3>${table(rows)}</section>`;
+}
+function exercise(e,i,tab){
+ let sets="";
+ for(let s=0;s<e.sets;s++){let v=val(key(tab,i,s));sets+=`<div class="set"><div class="setno">${s+1}</div><input inputmode="decimal" placeholder="Weight" value="${esc(v.weight)}" onchange="field('${esc(tab)}',${i},${s},'weight',this.value)"><input inputmode="numeric" placeholder="${esc(e.reps)} reps" value="${esc(v.reps)}" onchange="field('${esc(tab)}',${i},${s},'reps',this.value)"><button class="check ${v.done?"done":""}" onclick="toggle('${esc(tab)}',${i},${s})">${v.done?"✓":"○"}</button></div>`}
+ return `<section class="exercise" id="ex${i}"><div class="label">EXERCISE ${i+1}</div><h3>${esc(e.name)}</h3><div class="meta">${e.sets} sets × ${esc(e.reps)} • Rest ${esc(e.rest)} sec</div><div class="raw">${esc(e.source)}</div>${sets}<button class="btn secondary" onclick="openTimer(${+e.rest||90})">⏱ Start ${esc(e.rest)}s Rest</button></section>`;
+}
+function field(tab,i,s,f,v){let k=key(tab,i,s),x=val(k);x[f]=v;state.values[k]=x;save()}
+function toggle(tab,i,s){let k=key(tab,i,s),x=val(k);x.done=!x.done;state.values[k]=x;save();render()}
+function next(){let ex=identifyRows(PLAN[state.tab]||[]).map(parseExercise);if(!ex.length)return;state.current=Math.min(ex.length-1,state.current+1);document.getElementById("ex"+state.current)?.scrollIntoView({behavior:"smooth",block:"start"})}
+function previous(){state.current=Math.max(0,state.current-1);document.getElementById("ex"+state.current)?.scrollIntoView({behavior:"smooth",block:"start"})}
+function resetTab(){if(!confirm("Reset saved sets, weights and reps for this workout?"))return;Object.keys(state.values).filter(k=>k.startsWith(state.tab+"|")).forEach(k=>delete state.values[k]);save();render()}
+function finish(){alert("Workout finished. Great job!")}
+function table(rows){return `<div class="tablewrap"><table><tbody>${rows.map((r,i)=>`<tr>${r.map(c=>i===0?`<th>${esc(c)}</th>`:`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`}
+function openTimer(n){seconds=+n||90;update();document.getElementById("timer").classList.add("show")}
+function closeTimer(){clearInterval(timerId);timerId=null;document.getElementById("timer").classList.remove("show")}
+function startTimer(){clearInterval(timerId);timerId=setInterval(()=>{seconds--;update();if(seconds<=0){clearInterval(timerId);timerId=null;navigator.vibrate?.([250,100,250])}},1000)}
+function adjust(n){seconds=Math.max(0,seconds+n);update()}
+function update(){let m=Math.floor(seconds/60),s=seconds%60;document.getElementById("clock").textContent=m+":"+String(s).padStart(2,"0")}
+render();
+</script>
+
+<div id="appInstallHint" style="display:none;position:fixed;left:12px;right:12px;bottom:78px;z-index:9999;background:#111827;color:#fff;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:14px;">
+  <strong>Make this an iPhone app</strong><br>
+  In Safari, tap <b>Share → Add to Home Screen</b>.
+  <button onclick="this.parentElement.style.display='none'" style="float:right;border:0;background:transparent;color:#fff;font-size:22px;">×</button>
+</div>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+if (window.matchMedia('(display-mode: standalone)').matches === false && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  setTimeout(() => { const x=document.getElementById('appInstallHint'); if(x) x.style.display='block'; }, 1200);
+}
+</script>
+</body>
+</html>
